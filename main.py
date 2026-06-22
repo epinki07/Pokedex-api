@@ -23,7 +23,7 @@ pokedex = {
         "tipo": ["Agua"],
         "nivel": 5,
         "habilidad": "Torrente"}}
-
+# se declaran pokemons iniciales
 pokemon_iniciales = {1, 4, 7}
 
 class Pokemon(BaseModel):
@@ -172,7 +172,7 @@ def liberar_pokemon(pokemon_id: int):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No existe el pokemon #{pokemon_id} que se quiere borrar en la pokedex."
         )
-
+# se protegen a los pokemones iniciales
     if pokemon_id in pokemon_iniciales:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

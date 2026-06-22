@@ -78,6 +78,57 @@ Si se intenta eliminar alguno de ellos, la API responde con el código `403 Forb
 
 Cuando el ID solicitado no existe, la API responde con el código `404 Not Found`.
 
+## Capturas de la API
+
+<details>
+<summary>Endpoint de inicio</summary>
+
+![Endpoint de inicio](docs/images/swagger-inicio.png)
+
+</details>
+
+<details>
+<summary>Consulta por ID</summary>
+
+![Consulta de un Pokémon por ID](docs/images/swagger-consulta-id.png)
+
+</details>
+
+<details>
+<summary>Consulta con filtros</summary>
+
+![Consulta de Pokémon con filtros](docs/images/swagger-consulta-filtros.png)
+
+</details>
+
+<details>
+<summary>Actualización completa</summary>
+
+![Actualización completa de un Pokémon](docs/images/swagger-actualizacion-completa.png)
+
+</details>
+
+<details>
+<summary>Actualización parcial</summary>
+
+![Actualización parcial de un Pokémon](docs/images/swagger-actualizacion-parcial.png)
+
+</details>
+
+<details>
+<summary>Eliminación de un Pokémon</summary>
+
+![Eliminación de un Pokémon](docs/images/swagger-eliminacion.png)
+
+</details>
+
+<details>
+<summary>Esquemas de datos</summary>
+
+![Esquemas de datos de la API](docs/images/swagger-esquemas.png)
+
+</details>
+
 ## Ejemplo de registro
 
 Petición:
