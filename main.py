@@ -10,7 +10,9 @@ pokedex = {
         "nombre": "Bulbasaur",
         "tipo": ["Planta", "Veneno"],
         "nivel": 5,
-        "habilidad": "Espesura"},
+        "habilidad": "Espesura",
+    "movimientos" : ["Placaje", "Veneno"]
+    },
     4: {
         "nombre": "Charmander",
         "tipo": ["Fuego"],
@@ -27,7 +29,18 @@ class Pokemon(BaseModel):
     tipo: List[str]
     nivel: int
     habilidad: str
+    movimientos: List[str]
+    ataque: int
+    defensa: int
 
+class PokemonParcial(BaseModel):
+    nombre: str | None
+    tipo: List[str] | None
+    nivel: int | None
+    habilidad: str | None
+    movimientos: List[str] | None
+    ataque: int | None
+    defensa: int | None
 
 @app.get("/")
 
@@ -120,5 +133,17 @@ def actualizar_pokemon_completo(pokemon_id: int, Pokemon_actualizados: Pokemon)
     pokedex[pokemon_id] = Pokemon_actualizados.model_dump()
 
     return {
-        "Mensaje: Reemplazo completado con éxito. "}
-        "datos": pokedex[pokemon.id]
+        "Mensaje: Reemplazo completado con éxito. "
+        "datos" : pokedex[pokemon_id]
+    }
+
+#Endpoint para actualizar parcialmente un pokemon en la pokedex
+
+@app.patch("/pokemons/{pokemon.id}")
+def actualizar_pokemon_parcial(pokemon_id: int, Pokemon_actualizados: PokemonParcial):
+    #1.- VALIDAR QUE EL POKEMON EXISTA EN LA POKEDEX
+    if (pokemon_id not in pokedex )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No existe el pokemon que se quiere actualizar en la pokedex."
+        )
