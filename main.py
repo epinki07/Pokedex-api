@@ -34,13 +34,13 @@ class Pokemon(BaseModel):
     defensa: int
 
 class PokemonParcial(BaseModel):
-    nombre: str | None
-    tipo: List[str] | None
-    nivel: int | None
-    habilidad: str | None
-    movimientos: List[str] | None
-    ataque: int | None
-    defensa: int | None
+    nombre: str | None = None
+    tipo: List[str] | None = None
+    nivel: int | None = None
+    habilidad: str | None = None
+    movimientos: List[str] | None = None
+    ataque: int | None = None
+    defensa: int | None = None
 
 @app.get("/")
 
@@ -123,9 +123,9 @@ def registrar_nuevo_pokemon(pokemon_id : int, nuevo_pokemon : Pokemon):
 # 2. Checar pk que no se registra.
 
 #EndPoint para actualizar por COMPLETO un endpoint de la pokedex
-@app.put("/pokemons/{pokemon.id}")
-def actualizar_pokemon_completo(pokemon_id: int, Pokemon_actualizados: Pokemon)
-    if (pokemon_id not in pokedex )
+@app.put("/pokemons/{pokemon_id}")
+def actualizar_pokemon_completo(pokemon_id: int, Pokemon_actualizados: Pokemon):
+    if pokemon_id not in pokedex:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No existe el pokemon que se quiere actualizar en la pokedex."
@@ -133,17 +133,31 @@ def actualizar_pokemon_completo(pokemon_id: int, Pokemon_actualizados: Pokemon)
     pokedex[pokemon_id] = Pokemon_actualizados.model_dump()
 
     return {
-        "Mensaje: Reemplazo completado con éxito. "
-        "datos" : pokedex[pokemon_id]
+        "mensaje": "Reemplazo completado con éxito.",
+        "datos": pokedex[pokemon_id]
     }
 
 #Endpoint para actualizar parcialmente un pokemon en la pokedex
 
-@app.patch("/pokemons/{pokemon.id}")
+@app.patch("/pokemons/{pokemon_id}")
 def actualizar_pokemon_parcial(pokemon_id: int, Pokemon_actualizados: PokemonParcial):
     #1.- VALIDAR QUE EL POKEMON EXISTA EN LA POKEDEX
-    if (pokemon_id not in pokedex )
+    if pokemon_id not in pokedex:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No existe el pokemon que se quiere actualizar en la pokedex."
         )
+
+    # 2.- GUARDAR UNICAMENTE LOS DATOS A ACTUALIZAR
+    # Exclude_unset=True para ignorar los campos que sean None
+s
+    datos_a_actualizar = Pokemon_actualizados.model_dump(exclude_unset=True)
+
+    #. Actualizamos Solo los campos que el usuario mandó en datos_actualizados
+for llave, valor in datos_a_actualizar.items():
+    pokedex[pokemon_id][llave] = valor
+
+    return {
+        "Mensaje:" : "Actualizacion parcial exitosa.!",
+        "datos" : pokedex[pokemon_id]
+    }

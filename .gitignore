@@ -28,3 +28,8 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+venv/
+__pycache__/
+*.pyc
+.idea/
+*.iml
