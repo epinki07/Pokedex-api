@@ -173,9 +173,11 @@ def liberar_pokemon(pokemon_id: int):
 
     # 2- Eliminamos el pokemon de la pokedex utulizando .pop()
 
-    pokemon_liberado = pokedex.pop(pokemon_id)ss
+    pokemon_liberado = pokedex.pop(pokemon_id)
     nombre = pokemon_liberado['nombre']
 
     return {
         "Mensaje" : f"¡Adiós, {nombre}! Pokemon liberado exitosamente."
     }
+
+# Agregar regla de negocio al metodo delete de tal manera que no se pueddan eliminar pokemon inicial si alguien quiere elimiarnos le debe de decir que no tiene permiso Error 403 con mensaje personalizado.
