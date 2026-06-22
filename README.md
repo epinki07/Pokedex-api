@@ -50,7 +50,7 @@ La API estará disponible en `http://127.0.0.1:8000`. La documentación interact
 | `POST` | `/pokemon/{pokemon_id}` | Registra un Pokémon |
 | `PUT` | `/pokemons/{pokemon_id}` | Reemplaza todos los datos de un Pokémon |
 | `PATCH` | `/pokemons/{pokemon_id}` | Actualiza uno o varios datos de un Pokémon |
-| `DELETE` | `/pokemons/{pokemon_id}` | Elimina un Pokémon de la Pokédex |
+| `DELETE` | `/pokemons/{pokemon_id}` | Elimina un Pokémon que no sea inicial |
 
 La consulta general acepta los parámetros opcionales `tipo` y `habilidad`:
 
@@ -59,6 +59,24 @@ GET /pokemons?tipo=agua
 GET /pokemons?habilidad=torrente
 GET /pokemons?tipo=agua&habilidad=torrente
 ```
+
+## Reglas de negocio
+
+Los Pokémon iniciales están protegidos y no pueden eliminarse:
+
+- Bulbasaur: ID `1`
+- Charmander: ID `4`
+- Squirtle: ID `7`
+
+Si se intenta eliminar alguno de ellos, la API responde con el código `403 Forbidden` y el mensaje:
+
+```json
+{
+  "detail": "No tienes permiso para eliminar un Pokemon inicial."
+}
+```
+
+Cuando el ID solicitado no existe, la API responde con el código `404 Not Found`.
 
 ## Ejemplo de registro
 
