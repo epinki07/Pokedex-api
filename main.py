@@ -128,7 +128,7 @@ def actualizar_pokemon_completo(pokemon_id: int, Pokemon_actualizados: Pokemon):
     if pokemon_id not in pokedex:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No existe el pokemon que se quiere actualizar en la pokedex."
+            detail=f"No existe el pokemon #{pokemon_id} que se quiere actualizar en la pokedex."
         )
     pokedex[pokemon_id] = Pokemon_actualizados.model_dump()
 
@@ -145,19 +145,37 @@ def actualizar_pokemon_parcial(pokemon_id: int, Pokemon_actualizados: PokemonPar
     if pokemon_id not in pokedex:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No existe el pokemon que se quiere actualizar en la pokedex."
+            detail=f"No existe el pokemon#{pokemon_id} que se quiere actualizar en la pokedex."
         )
 
     # 2.- GUARDAR UNICAMENTE LOS DATOS A ACTUALIZAR
     # Exclude_unset=True para ignorar los campos que sean None
-s
+
     datos_a_actualizar = Pokemon_actualizados.model_dump(exclude_unset=True)
 
     #. Actualizamos Solo los campos que el usuario mandó en datos_actualizados
-for llave, valor in datos_a_actualizar.items():
-    pokedex[pokemon_id][llave] = valor
+    for llave, valor in datos_a_actualizar.items():
+        pokedex[pokemon_id][llave] = valor
 
     return {
         "Mensaje:" : "Actualizacion parcial exitosa.!",
         "datos" : pokedex[pokemon_id]
+    }
+# ENDPOINT PARA LIBERAR (ELIMINAR) UN POKEMON
+
+@app.delete("/pokemons/{pokemon_id}")
+def liberar_pokemon(pokemon_id: int):
+    if pokemon_id not in pokedex:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No existe el pokemon #{pokemon_id} que se quiere borrar en la pokedex."
+        )
+
+    # 2- Eliminamos el pokemon de la pokedex utulizando .pop()
+
+    pokemon_liberado = pokedex.pop(pokemon_id)ss
+    nombre = pokemon_liberado['nombre']
+
+    return {
+        "Mensaje" : f"¡Adiós, {nombre}! Pokemon liberado exitosamente."
     }
