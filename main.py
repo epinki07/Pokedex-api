@@ -11,18 +11,29 @@ pokedex = {
         "tipo": ["Planta", "Veneno"],
         "nivel": 5,
         "habilidad": "Espesura",
-    "movimientos" : ["Placaje", "Veneno"]
+        "movimientos": ["Placaje", "Gruñido", "Látigo Cepa", "Polvo Veneno"],
+        "ataque": 49,
+        "defensa": 49
     },
     4: {
         "nombre": "Charmander",
         "tipo": ["Fuego"],
         "nivel": 5,
-        "habilidad": "Blaze"},
+        "habilidad": "Blaze",
+        "movimientos": ["Arañazo", "Gruñido", "Ascuas", "Pantalla de Humo"],
+        "ataque": 52,
+        "defensa": 43
+    },
     7: {
         "nombre": "Squirtle",
         "tipo": ["Agua"],
         "nivel": 5,
-        "habilidad": "Torrente"}}
+        "habilidad": "Torrente",
+        "movimientos": ["Placaje", "Látigo", "Pistola Agua", "Refugio"],
+        "ataque": 48,
+        "defensa": 65
+    }
+}
 # se declaran pokemons iniciales
 pokemon_iniciales = {1, 4, 7}
 
@@ -120,9 +131,6 @@ def registrar_nuevo_pokemon(pokemon_id : int, nuevo_pokemon : Pokemon):
          "mensaje": f"¡Ya está! Nuevo Pokemón registrado con el ID#{pokemon_id} con el nombre {pokedex[pokemon_id]['nombre']}",
          "datos": pokedex[pokemon_id]
      }
-
-# 1. Modificar pokedex y agregar  4 movimientos [Lista : str]. Y agregar 2 parámetros de defensa, y ataque. Agregar un pokémon nuevo con lo mismo y que se muestre como se hizo.
-# 2. Checar pk que no se registra.
 
 #EndPoint para actualizar por COMPLETO un endpoint de la pokedex
 @app.put("/pokemons/{pokemon_id}")
