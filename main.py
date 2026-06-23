@@ -6,33 +6,15 @@ from typing import List, Optional
 app = FastAPI(title="PokéDex API de Diego Rami")
 
 pokedex = {
-    1: {
-        "nombre": "Bulbasaur",
-        "tipo": ["Planta", "Veneno"],
-        "nivel": 5,
-        "habilidad": "Espesura",
-        "movimientos": ["Placaje", "Gruñido", "Látigo Cepa", "Polvo Veneno"],
-        "ataque": 49,
-        "defensa": 49
-    },
-    4: {
-        "nombre": "Charmander",
-        "tipo": ["Fuego"],
-        "nivel": 5,
-        "habilidad": "Blaze",
-        "movimientos": ["Arañazo", "Gruñido", "Ascuas", "Pantalla de Humo"],
-        "ataque": 52,
-        "defensa": 43
-    },
-    7: {
-        "nombre": "Squirtle",
-        "tipo": ["Agua"],
-        "nivel": 5,
-        "habilidad": "Torrente",
-        "movimientos": ["Placaje", "Látigo", "Pistola Agua", "Refugio"],
-        "ataque": 48,
-        "defensa": 65
-    }
+    1: {"nombre": "Bulbasaur", "tipo": ["Planta", "Veneno"], "nivel": 5, "habilidad": "Piel verde", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
+    2: {"nombre": "Ivysaur", "tipo": ["Planta", "Veneno"], "nivel": 16, "habilidad": "Piel verde", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
+    3: {"nombre": "Venusaur", "tipo": ["Planta", "Veneno"], "nivel": 32, "habilidad": "Piel verde", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
+    4: {"nombre": "Charmander", "tipo": ["Fuego"], "nivel": 5, "habilidad": "Piel roja", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
+    5: {"nombre": "Charmeleon", "tipo": ["Fuego"], "nivel": 16, "habilidad": "Piel roja", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
+    6: {"nombre": "Charizard", "tipo": ["Fuego", "Volador"], "nivel": 32, "habilidad": "Piel roja", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
+    7: {"nombre": "Squirtle", "tipo": ["Agua"], "nivel": 5, "habilidad": "Piel azul", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
+    8: {"nombre": "Wartortle", "tipo": ["Agua"], "nivel": 5, "habilidad": "Piel azul", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
+    9: {"nombre": "Blastoise", "tipo": ["Agua"], "nivel": 5, "habilidad": "Piel azul", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5}
 }
 # se declaran pokemons iniciales
 pokemon_iniciales = {1, 4, 7}
@@ -70,12 +52,44 @@ def obtener_por_id(pokemon_id : int):
 
 #Ejemplo de Query Parameter
 
+# Ejemplo de Query Parameter
 @app.get("/pokemons")
-
-def obtener_todos_los_pokemon(tipo : Optional[str] = None, habilidad : Optional[str] = None):
-    #1. El usuario no especifico tipo
+def obtener_todos_los_pokemon(tipo: str = None, habilidad: str = None):
     if tipo is None and habilidad is None:
         return pokedex
+
+    resultados = pokedex
+
+    if tipo:
+        tipo_existe = any(tipo.capitalize() in p["tipo"] for p in pokedex.values())
+        if not tipo_existe:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No existe ningún Pokémon de tipo {tipo.capitalize()} en la PokéDex..."
+            )
+        resultados = {id: p for id, p in resultados.items() if tipo.capitalize() in p["tipo"]}
+
+    if habilidad:
+        hab_existe = any(habilidad.lower() == p["habilidad"].lower() for p in pokedex.values())
+        if not hab_existe:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No existe ningún Pokémon con la habilidad '{habilidad}' en la PokéDex..."
+            )
+        resultados = {id: p for id, p in resultados.items() if habilidad.lower() == p["habilidad"].lower()}
+
+    if not resultados:
+        mensaje_error = "No se encontraron Pokémon"
+        if tipo:
+            mensaje_error += f" de tipo {tipo.capitalize()}"
+        if habilidad:
+            mensaje_error += f" con la habilidad '{habilidad}'"
+        raise HTTPException(
+            status_code=404,
+            detail=f"{mensaje_error} en la PokéDex..."
+        )
+
+    return resultados
 
     #2. El usuario especifico un tipo
     pokemon_filtrado = {}
