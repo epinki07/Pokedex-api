@@ -1,9 +1,10 @@
-from fastapi import FastAPI, HTTPException, status
+from typing import Annotated
+
+from fastapi import FastAPI, HTTPException, Query, status
 from pydantic import BaseModel
-from typing import List, Optional
 
 
-app = FastAPI(title="PokéDex API de Diego Rami")
+app = FastAPI(title="Pokédex API de Diego Rami")
 
 pokedex = {
     1: {"nombre": "Bulbasaur", "tipo": ["Planta", "Veneno"], "nivel": 5, "habilidad": "Piel verde", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
@@ -21,191 +22,180 @@ pokemon_iniciales = {1, 4, 7}
 
 class Pokemon(BaseModel):
     nombre: str
-    tipo: List[str]
+    tipo: list[str]
     nivel: int
     habilidad: str
-    movimientos: List[str]
+    movimientos: list[str]
     ataque: int
     defensa: int
 
+
 class PokemonParcial(BaseModel):
     nombre: str | None = None
-    tipo: List[str] | None = None
+    tipo: list[str] | None = None
     nivel: int | None = None
     habilidad: str | None = None
-    movimientos: List[str] | None = None
+    movimientos: list[str] | None = None
     ataque: int | None = None
     defensa: int | None = None
 
+
 @app.get("/")
-
 def leer_raiz():
-    return {"mensaje": "¡Bienvenido a la PokéDex API! Mi nombre es Diego Rami y mi pokemon favorito es Charizard" }
-@app.get("/pokemons/{pokemon_id}")
-
-
-#Ejemplo de Path Parameter
-def obtener_por_id(pokemon_id : int):
-    if pokemon_id not in pokedex:
-        raise HTTPException(status_code = 404, detail= f"El Pokemón con el ID#{pokemon_id} no existe en la región" )
-    return pokedex[pokemon_id]
-
-#Ejemplo de Query Parameter
-
-# Ejemplo de Query Parameter
-@app.get("/pokemons")
-def obtener_todos_los_pokemon(tipo: str = None, habilidad: str = None):
-    if tipo is None and habilidad is None:
-        return pokedex
-
-    resultados = pokedex
-
-    if tipo:
-        tipo_existe = any(tipo.capitalize() in p["tipo"] for p in pokedex.values())
-        if not tipo_existe:
-            raise HTTPException(
-                status_code=404,
-                detail=f"No existe ningún Pokémon de tipo {tipo.capitalize()} en la PokéDex..."
-            )
-        resultados = {id: p for id, p in resultados.items() if tipo.capitalize() in p["tipo"]}
-
-    if habilidad:
-        hab_existe = any(habilidad.lower() == p["habilidad"].lower() for p in pokedex.values())
-        if not hab_existe:
-            raise HTTPException(
-                status_code=404,
-                detail=f"No existe ningún Pokémon con la habilidad '{habilidad}' en la PokéDex..."
-            )
-        resultados = {id: p for id, p in resultados.items() if habilidad.lower() == p["habilidad"].lower()}
-
-    if not resultados:
-        mensaje_error = "No se encontraron Pokémon"
-        if tipo:
-            mensaje_error += f" de tipo {tipo.capitalize()}"
-        if habilidad:
-            mensaje_error += f" con la habilidad '{habilidad}'"
-        raise HTTPException(
-            status_code=404,
-            detail=f"{mensaje_error} en la PokéDex..."
-        )
-
-    return resultados
-
-    #2. El usuario especifico un tipo
-    pokemon_filtrado = {}
-    pokemon_tipo = {}
-    pokemon_habilidad = {}
-
-    for pokemon_id, datos in pokedex.items():
-        if tipo is None or tipo.capitalize() in datos["tipo"]:
-            pokemon_tipo[pokemon_id] = datos
-
-    if not pokemon_tipo:
-        raise HTTPException(
-            status_code =404,
-            detail = f"No existe ningún Pokemon de tipo {tipo}"
-        )
-
-    for pokemon_id, datos in pokedex.items():
-        if habilidad is None or habilidad.capitalize() == datos["habilidad"]:
-            pokemon_habilidad[pokemon_id] = datos
-
-
-    if not pokemon_habilidad:
-        raise HTTPException(
-            status_code=404,
-            detail = f"No existe ningún Pokemon con la habilidad {habilidad}"
-        )
-
-    for pokemon_id, datos in pokedex.items():
-        if (tipo is None or tipo.capitalize() in datos["tipo"]) and (habilidad is None or habilidad.capitalize() == datos["habilidad"]):
-            pokemon_filtrado[pokemon_id] = datos
-    if not pokemon_filtrado:
-        raise HTTPException(
-            status_code=404,
-            detail=f"No existe ningún Pokémon con los siguientes filtros: {tipo}, {habilidad}"
-        )
-
-    return pokemon_filtrado
-
-# Endpoint para registrar nuevo Pokemon
-
-@app.post("/pokemon/{pokemon_id}")
-
-def registrar_nuevo_pokemon(pokemon_id : int, nuevo_pokemon : Pokemon):
-    # Recibir un pokemon: Nombre, tipo, nivel, etc.
-    # Reglas de negocio
-    if pokemon_id in pokedex:
-        raise HTTPException(
-            status_code = 400,
-            detail = f"Ya existe un Pokemon con el ID #{pokemon_id}. Se trata de {pokedex[pokemon_id]['nombre']}"
-        )
-    pokedex[pokemon_id] = nuevo_pokemon.model_dump() # Registro nuevo pokemon en la pokedex
     return {
-         "mensaje": f"¡Ya está! Nuevo Pokemón registrado con el ID#{pokemon_id} con el nombre {pokedex[pokemon_id]['nombre']}",
-         "datos": pokedex[pokemon_id]
-     }
+        "mensaje": (
+            "¡Bienvenido a la Pokédex API! Mi nombre es Diego Rami "
+            "y mi Pokémon favorito es Charizard"
+        )
+    }
 
-#EndPoint para actualizar por COMPLETO un endpoint de la pokedex
-@app.put("/pokemons/{pokemon_id}")
-def actualizar_pokemon_completo(pokemon_id: int, Pokemon_actualizados: Pokemon):
+
+@app.get("/pokemons/{pokemon_id}")
+def obtener_por_id(pokemon_id: int):
     if pokemon_id not in pokedex:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No existe el pokemon #{pokemon_id} que se quiere actualizar en la pokedex."
+            detail=f"El Pokémon con el ID #{pokemon_id} no existe en la región.",
         )
-    pokedex[pokemon_id] = Pokemon_actualizados.model_dump()
+    return pokedex[pokemon_id]
+
+
+@app.get("/pokemons")
+def obtener_todos_los_pokemon(
+    tipo: Annotated[str | None, Query(min_length=1)] = None,
+    habilidad: Annotated[str | None, Query(min_length=1)] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 5,
+    offset: Annotated[int, Query(ge=0)] = 0,
+):
+    """Filtra la Pokédex y después pagina las coincidencias."""
+    tipo_normalizado = tipo.strip().casefold() if tipo else None
+    habilidad_normalizada = habilidad.strip().casefold() if habilidad else None
+
+    if tipo_normalizado and not any(
+        tipo_normalizado in (tipo_pokemon.casefold() for tipo_pokemon in pokemon["tipo"])
+        for pokemon in pokedex.values()
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No existe ningún Pokémon de tipo '{tipo}' en la Pokédex.",
+        )
+
+    if habilidad_normalizada and not any(
+        habilidad_normalizada == pokemon["habilidad"].casefold()
+        for pokemon in pokedex.values()
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No existe ningún Pokémon con la habilidad '{habilidad}' en la Pokédex.",
+        )
+
+    resultados = {
+        pokemon_id: pokemon
+        for pokemon_id, pokemon in pokedex.items()
+        if (
+            tipo_normalizado is None
+            or tipo_normalizado
+            in (tipo_pokemon.casefold() for tipo_pokemon in pokemon["tipo"])
+        )
+        and (
+            habilidad_normalizada is None
+            or habilidad_normalizada == pokemon["habilidad"].casefold()
+        )
+    }
+
+    if not resultados:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=(
+                "No se encontraron Pokémon con la combinación de filtros "
+                f"tipo='{tipo}' y habilidad='{habilidad}'."
+            ),
+        )
+
+    coincidencias = list(resultados.items())
+    resultados_paginados = dict(coincidencias[offset : offset + limit])
+
+    return {
+        "total_coincidencias": len(resultados),
+        "limite": limit,
+        "desplazamiento": offset,
+        "resultados": resultados_paginados,
+    }
+
+
+@app.post("/pokemon/{pokemon_id}")
+def registrar_nuevo_pokemon(pokemon_id: int, nuevo_pokemon: Pokemon):
+    if pokemon_id in pokedex:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Ya existe un Pokémon con el ID #{pokemon_id}. "
+                f"Se trata de {pokedex[pokemon_id]['nombre']}."
+            ),
+        )
+    pokedex[pokemon_id] = nuevo_pokemon.model_dump()
+    return {
+        "mensaje": (
+            f"¡Ya está! Nuevo Pokémon registrado con el ID #{pokemon_id} "
+            f"y el nombre {pokedex[pokemon_id]['nombre']}."
+        ),
+        "datos": pokedex[pokemon_id],
+    }
+
+
+@app.put("/pokemons/{pokemon_id}")
+def actualizar_pokemon_completo(pokemon_id: int, pokemon_actualizado: Pokemon):
+    if pokemon_id not in pokedex:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No existe el Pokémon #{pokemon_id} que se quiere actualizar en la Pokédex.",
+        )
+    pokedex[pokemon_id] = pokemon_actualizado.model_dump()
 
     return {
         "mensaje": "Reemplazo completado con éxito.",
-        "datos": pokedex[pokemon_id]
+        "datos": pokedex[pokemon_id],
     }
 
-#Endpoint para actualizar parcialmente un pokemon en la pokedex
 
 @app.patch("/pokemons/{pokemon_id}")
-def actualizar_pokemon_parcial(pokemon_id: int, Pokemon_actualizados: PokemonParcial):
-    #1.- VALIDAR QUE EL POKEMON EXISTA EN LA POKEDEX
+def actualizar_pokemon_parcial(pokemon_id: int, pokemon_actualizado: PokemonParcial):
     if pokemon_id not in pokedex:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No existe el pokemon#{pokemon_id} que se quiere actualizar en la pokedex."
+            detail=f"No existe el Pokémon #{pokemon_id} que se quiere actualizar en la Pokédex.",
         )
 
-    # 2.- GUARDAR UNICAMENTE LOS DATOS A ACTUALIZAR
-    # Exclude_unset=True para ignorar los campos que sean None
-
-    datos_a_actualizar = Pokemon_actualizados.model_dump(exclude_unset=True)
-
-    #. Actualizamos Solo los campos que el usuario mandó en datos_actualizados
+    datos_a_actualizar = pokemon_actualizado.model_dump(
+        exclude_unset=True,
+        exclude_none=True,
+    )
     for llave, valor in datos_a_actualizar.items():
         pokedex[pokemon_id][llave] = valor
 
     return {
-        "Mensaje:" : "Actualizacion parcial exitosa.!",
-        "datos" : pokedex[pokemon_id]
+        "mensaje": "Actualización parcial exitosa.",
+        "datos": pokedex[pokemon_id],
     }
-# ENDPOINT PARA LIBERAR (ELIMINAR) UN POKEMON
+
 
 @app.delete("/pokemons/{pokemon_id}")
 def liberar_pokemon(pokemon_id: int):
     if pokemon_id not in pokedex:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No existe el pokemon #{pokemon_id} que se quiere borrar en la pokedex."
+            detail=f"No existe el Pokémon #{pokemon_id} que se quiere borrar en la Pokédex.",
         )
-# se protegen a los pokemones iniciales
+
     if pokemon_id in pokemon_iniciales:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permiso para eliminar un Pokemon inicial."
+            detail="No tienes permiso para eliminar un Pokémon inicial.",
         )
 
-    # 2- Eliminamos el pokemon de la pokedex utulizando .pop()
-
     pokemon_liberado = pokedex.pop(pokemon_id)
-    nombre = pokemon_liberado['nombre']
+    nombre = pokemon_liberado["nombre"]
 
     return {
-        "Mensaje" : f"¡Adiós, {nombre}! Pokemon liberado exitosamente."
+        "mensaje": f"¡Adiós, {nombre}! Pokémon liberado exitosamente."
     }

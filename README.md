@@ -52,13 +52,33 @@ La API estará disponible en `http://127.0.0.1:8000`. La documentación interact
 | `PATCH` | `/pokemons/{pokemon_id}` | Actualiza uno o varios datos de un Pokémon |
 | `DELETE` | `/pokemons/{pokemon_id}` | Elimina un Pokémon que no sea inicial |
 
-La consulta general acepta los parámetros opcionales `tipo` y `habilidad`:
+La consulta general acepta los parámetros opcionales `tipo`, `habilidad`,
+`limit` y `offset`. Primero se aplican los filtros y después la paginación:
 
 ```text
 GET /pokemons?tipo=agua
-GET /pokemons?habilidad=torrente
-GET /pokemons?tipo=agua&habilidad=torrente
+GET /pokemons?habilidad=Piel%20azul
+GET /pokemons?tipo=agua&habilidad=Piel%20azul
+GET /pokemons?tipo=agua&limit=2&offset=0
 ```
+
+La respuesta incluye el total de coincidencias, el límite, el desplazamiento y
+los Pokémon de la página solicitada:
+
+```json
+{
+  "total_coincidencias": 3,
+  "limite": 2,
+  "desplazamiento": 0,
+  "resultados": {
+    "7": { "nombre": "Squirtle" },
+    "8": { "nombre": "Wartortle" }
+  }
+}
+```
+
+`limit` debe estar entre 1 y 100, mientras que `offset` debe ser igual o mayor
+que cero.
 
 ## Reglas de negocio
 
@@ -72,7 +92,7 @@ Si se intenta eliminar alguno de ellos, la API responde con el código `403 Forb
 
 ```json
 {
-  "detail": "No tienes permiso para eliminar un Pokemon inicial."
+  "detail": "No tienes permiso para eliminar un Pokémon inicial."
 }
 ```
 
