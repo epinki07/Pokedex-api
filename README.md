@@ -46,6 +46,7 @@ La API estará disponible en `http://127.0.0.1:8000`. La documentación interact
 | --- | --- | --- |
 | `GET` | `/` | Muestra el mensaje de bienvenida |
 | `GET` | `/pokemons` | Consulta todos los Pokémon |
+| `GET` | `/pokemons/catalogo` | Consulta un catálogo paginado para web o móvil |
 | `GET` | `/pokemons/{pokemon_id}` | Consulta un Pokémon por su ID |
 | `POST` | `/pokemon/{pokemon_id}` | Registra un Pokémon |
 | `PUT` | `/pokemons/{pokemon_id}` | Reemplaza todos los datos de un Pokémon |
@@ -79,6 +80,32 @@ los Pokémon de la página solicitada:
 
 `limit` debe estar entre 1 y 100, mientras que `offset` debe ser igual o mayor
 que cero.
+
+El endpoint alternativo `GET /pokemons/catalogo` está pensado para aplicaciones
+web o móviles. Usa los parámetros `page` y `size` en lugar de `limit` y
+`offset`:
+
+```text
+GET /pokemons/catalogo
+GET /pokemons/catalogo?page=2&size=3
+```
+
+La respuesta incluye metadatos claros para el frontend:
+
+```json
+{
+  "pagina_actual": 1,
+  "tamano_pagina": 3,
+  "resultado": {
+    "1": { "nombre": "Bulbasaur" },
+    "2": { "nombre": "Ivysaur" },
+    "3": { "nombre": "Venusaur" }
+  }
+}
+```
+
+`page` y `size` deben ser mayores que cero. Si alguno llega como `0` o negativo,
+la API responde con `400 Bad Request`.
 
 ## Reglas de negocio
 

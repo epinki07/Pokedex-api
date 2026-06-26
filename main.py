@@ -1,12 +1,16 @@
 from typing import Annotated
-
 from fastapi import FastAPI, HTTPException, Query, status
 from pydantic import BaseModel
+import copy
+import os
+import json
 
 
 app = FastAPI(title="Pokédex API de Diego Rami")
 
-pokedex = {
+ARCHIVO_DB = "pokedex.json"
+
+POKEDEX_INICIAL = {
     1: {"nombre": "Bulbasaur", "tipo": ["Planta", "Veneno"], "nivel": 5, "habilidad": "Piel verde", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
     2: {"nombre": "Ivysaur", "tipo": ["Planta", "Veneno"], "nivel": 16, "habilidad": "Piel verde", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
     3: {"nombre": "Venusaur", "tipo": ["Planta", "Veneno"], "nivel": 32, "habilidad": "Piel verde", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
@@ -17,6 +21,33 @@ pokedex = {
     8: {"nombre": "Wartortle", "tipo": ["Agua"], "nivel": 5, "habilidad": "Piel azul", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
     9: {"nombre": "Blastoise", "tipo": ["Agua"], "nivel": 5, "habilidad": "Piel azul", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5}
 }
+
+
+# Función 1: Leer el archivo JSON del disco duro y cargarlo a la RAM
+def cargar_pokedex() -> dict:
+    """Devuelve la Pokédex como un diccionario de Python."""
+    # Si el archivo no existe, usa los datos iniciales en memoria.
+    if not os.path.exists(ARCHIVO_DB):
+        return copy.deepcopy(POKEDEX_INICIAL)
+
+    with open(ARCHIVO_DB, "r", encoding="utf-8") as f:
+        # Cargar el archivo plano a la RAM como un archivo vivo.
+        datos_texto = json.load(f)
+        # JSON convierte los ID a string; la API trabaja con ID int.
+        return {int(k): v for k, v in datos_texto.items()}
+
+
+#Funcion 2: Tomar los cambios de la RAM y guardarlos en el JSON del disco duro.
+
+def guardar_pokedex(pokedex_actualizada: dict):
+    # Guardian y portal para acceder al archivo plano del disco duro.
+    with open(ARCHIVO_DB, "w", encoding="utf-8") as f:
+        # ensure_ascii e indent hacen que el JSON sea legible para humanos.
+        json.dump(pokedex_actualizada, f, ensure_ascii=False, indent=4)
+
+
+pokedex = cargar_pokedex()
+
 # se declaran pokemons iniciales
 pokemon_iniciales = {1, 4, 7}
 
@@ -47,6 +78,26 @@ def leer_raiz():
             "¡Bienvenido a la Pokédex API! Mi nombre es Diego Rami "
             "y mi Pokémon favorito es Charizard"
         )
+    }
+
+
+@app.get("/pokemons/catalogo")
+def obtener_catalogo_pokemons(page: int = 1, size: int = 3):
+    if page <= 0 or size <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Los valores de pagina o tamaño deben ser mayores a cero.",
+        )
+
+    indice_inicial = (page - 1) * size
+    indice_final = indice_inicial + size
+    pokedex_en_lista = list(pokedex.items())
+    resultado_paginado = dict(pokedex_en_lista[indice_inicial:indice_final])
+
+    return {
+        "pagina_actual": page,
+        "tamano_pagina": size,
+        "resultado": resultado_paginado,
     }
 
 

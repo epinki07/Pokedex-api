@@ -22,6 +22,43 @@ class PokedexApiTests(unittest.TestCase):
         self.assertEqual(len(primera_pagina["resultados"]), 5)
         self.assertEqual(len(segunda_pagina["resultados"]), 4)
 
+    def test_catalogo_usa_page_y_size_por_defecto(self):
+        respuesta = main.obtener_catalogo_pokemons()
+
+        self.assertEqual(respuesta["pagina_actual"], 1)
+        self.assertEqual(respuesta["tamano_pagina"], 3)
+        self.assertEqual(set(respuesta["resultado"]), {1, 2, 3})
+
+    def test_catalogo_calcula_indices_desde_page_y_size(self):
+        respuesta = main.obtener_catalogo_pokemons(page=2, size=3)
+
+        self.assertEqual(respuesta["pagina_actual"], 2)
+        self.assertEqual(respuesta["tamano_pagina"], 3)
+        self.assertEqual(set(respuesta["resultado"]), {4, 5, 6})
+
+    def test_catalogo_rechaza_page_o_size_invalidos(self):
+        casos_invalidos = [
+            {"page": 0, "size": 3},
+            {"page": -1, "size": 3},
+            {"page": 1, "size": 0},
+            {"page": 1, "size": -3},
+        ]
+
+        for caso in casos_invalidos:
+            with self.subTest(caso=caso):
+                with self.assertRaises(HTTPException) as contexto:
+                    main.obtener_catalogo_pokemons(**caso)
+
+                self.assertEqual(contexto.exception.status_code, 400)
+
+    def test_catalogo_se_registra_antes_de_ruta_por_id(self):
+        rutas = [ruta.path for ruta in main.app.routes]
+
+        self.assertLess(
+            rutas.index("/pokemons/catalogo"),
+            rutas.index("/pokemons/{pokemon_id}"),
+        )
+
     def test_filtros_son_combinables_e_ignoran_mayusculas(self):
         respuesta = main.obtener_todos_los_pokemon(
             tipo="AGUA",
