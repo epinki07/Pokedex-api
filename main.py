@@ -1,55 +1,104 @@
-from typing import Annotated
-from fastapi import FastAPI, HTTPException, Query, status
-from pydantic import BaseModel
 import copy
-import os
 import json
+import urllib.error
+import urllib.request
+from pathlib import Path
+from typing import Annotated
+
+from fastapi import FastAPI, Header, HTTPException, Query, status
+from pydantic import BaseModel
 
 
-app = FastAPI(title="Pokédex API de Diego Rami")
+app = FastAPI(title="Pokédex API de Diego Ramirez Magaña")
 
-ARCHIVO_DB = "pokedex.json"
+ARCHIVO_DB = Path(__file__).with_name("pokedex.json")
+CLAVE_SECRETA = "Mexico gana el mundial."
+POKEMON_INICIALES = {1, 4, 7}
 
 POKEDEX_INICIAL = {
-    1: {"nombre": "Bulbasaur", "tipo": ["Planta", "Veneno"], "nivel": 5, "habilidad": "Piel verde", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
-    2: {"nombre": "Ivysaur", "tipo": ["Planta", "Veneno"], "nivel": 16, "habilidad": "Piel verde", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
-    3: {"nombre": "Venusaur", "tipo": ["Planta", "Veneno"], "nivel": 32, "habilidad": "Piel verde", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
-    4: {"nombre": "Charmander", "tipo": ["Fuego"], "nivel": 5, "habilidad": "Piel roja", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
-    5: {"nombre": "Charmeleon", "tipo": ["Fuego"], "nivel": 16, "habilidad": "Piel roja", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
-    6: {"nombre": "Charizard", "tipo": ["Fuego", "Volador"], "nivel": 32, "habilidad": "Piel roja", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
-    7: {"nombre": "Squirtle", "tipo": ["Agua"], "nivel": 5, "habilidad": "Piel azul", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
-    8: {"nombre": "Wartortle", "tipo": ["Agua"], "nivel": 5, "habilidad": "Piel azul", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5},
-    9: {"nombre": "Blastoise", "tipo": ["Agua"], "nivel": 5, "habilidad": "Piel azul", "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"], "ataque": 10, "defensa": 5}
+    1: {
+        "nombre": "Bulbasaur",
+        "tipo": ["Planta", "Veneno"],
+        "nivel": 5,
+        "habilidad": "Piel verde",
+        "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"],
+        "ataque": 10,
+        "defensa": 5,
+    },
+    2: {
+        "nombre": "Ivysaur",
+        "tipo": ["Planta", "Veneno"],
+        "nivel": 16,
+        "habilidad": "Piel verde",
+        "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"],
+        "ataque": 10,
+        "defensa": 5,
+    },
+    3: {
+        "nombre": "Venusaur",
+        "tipo": ["Planta", "Veneno"],
+        "nivel": 32,
+        "habilidad": "Piel verde",
+        "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"],
+        "ataque": 10,
+        "defensa": 5,
+    },
+    4: {
+        "nombre": "Charmander",
+        "tipo": ["Fuego"],
+        "nivel": 5,
+        "habilidad": "Piel roja",
+        "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"],
+        "ataque": 10,
+        "defensa": 5,
+    },
+    5: {
+        "nombre": "Charmeleon",
+        "tipo": ["Fuego"],
+        "nivel": 16,
+        "habilidad": "Piel roja",
+        "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"],
+        "ataque": 10,
+        "defensa": 5,
+    },
+    6: {
+        "nombre": "Charizard",
+        "tipo": ["Fuego", "Volador"],
+        "nivel": 32,
+        "habilidad": "Piel roja",
+        "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"],
+        "ataque": 10,
+        "defensa": 5,
+    },
+    7: {
+        "nombre": "Squirtle",
+        "tipo": ["Agua"],
+        "nivel": 5,
+        "habilidad": "Piel azul",
+        "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"],
+        "ataque": 10,
+        "defensa": 5,
+    },
+    8: {
+        "nombre": "Wartortle",
+        "tipo": ["Agua"],
+        "nivel": 5,
+        "habilidad": "Piel azul",
+        "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"],
+        "ataque": 10,
+        "defensa": 5,
+    },
+    9: {
+        "nombre": "Blastoise",
+        "tipo": ["Agua"],
+        "nivel": 5,
+        "habilidad": "Piel azul",
+        "movimientos": ["Placaje", "Gruñido", "Arañazo", "Látigo"],
+        "ataque": 10,
+        "defensa": 5,
+    },
 }
 
-
-# Función 1: Leer el archivo JSON del disco duro y cargarlo a la RAM
-def cargar_pokedex() -> dict:
-    """Devuelve la Pokédex como un diccionario de Python."""
-    # Si el archivo no existe, usa los datos iniciales en memoria.
-    if not os.path.exists(ARCHIVO_DB):
-        return copy.deepcopy(POKEDEX_INICIAL)
-
-    with open(ARCHIVO_DB, "r", encoding="utf-8") as f:
-        # Cargar el archivo plano a la RAM como un archivo vivo.
-        datos_texto = json.load(f)
-        # JSON convierte los ID a string; la API trabaja con ID int.
-        return {int(k): v for k, v in datos_texto.items()}
-
-
-#Funcion 2: Tomar los cambios de la RAM y guardarlos en el JSON del disco duro.
-
-def guardar_pokedex(pokedex_actualizada: dict):
-    # Guardian y portal para acceder al archivo plano del disco duro.
-    with open(ARCHIVO_DB, "w", encoding="utf-8") as f:
-        # ensure_ascii e indent hacen que el JSON sea legible para humanos.
-        json.dump(pokedex_actualizada, f, ensure_ascii=False, indent=4)
-
-
-pokedex = cargar_pokedex()
-
-# se declaran pokemons iniciales
-pokemon_iniciales = {1, 4, 7}
 
 class Pokemon(BaseModel):
     nombre: str
@@ -59,6 +108,10 @@ class Pokemon(BaseModel):
     movimientos: list[str]
     ataque: int
     defensa: int
+
+
+class PokemonConId(Pokemon):
+    id: int
 
 
 class PokemonParcial(BaseModel):
@@ -71,13 +124,88 @@ class PokemonParcial(BaseModel):
     defensa: int | None = None
 
 
+def guardar_pokedex(pokedex_actualizada: dict[int, dict]) -> None:
+    with open(ARCHIVO_DB, "w", encoding="utf-8") as archivo:
+        json.dump(pokedex_actualizada, archivo, ensure_ascii=False, indent=4)
+
+
+def cargar_pokedex() -> dict[int, dict]:
+    if not ARCHIVO_DB.exists():
+        pokedex_inicial = copy.deepcopy(POKEDEX_INICIAL)
+        guardar_pokedex(pokedex_inicial)
+        return pokedex_inicial
+
+    with open(ARCHIVO_DB, "r", encoding="utf-8") as archivo:
+        datos_json = json.load(archivo)
+
+    return {int(pokemon_id): datos for pokemon_id, datos in datos_json.items()}
+
+
+def sincronizar_memoria(pokedex_local: dict[int, dict]) -> None:
+    pokedex.clear()
+    pokedex.update(pokedex_local)
+
+
+def validar_api_key(x_api_key: str | None) -> None:
+    if x_api_key != CLAVE_SECRETA:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Acceso denegado. API key inválida o faltante.",
+        )
+
+
+pokedex = cargar_pokedex()
+
+
 @app.get("/")
 def leer_raiz():
     return {
         "mensaje": (
-            "¡Bienvenido a la Pokédex API! Mi nombre es Diego Rami "
+            "¡Bienvenido a la Pokédex API! Mi nombre es Diego Ramirez Magaña "
             "y mi Pokémon favorito es Charizard"
         )
+    }
+
+
+@app.get("/pokemons")
+def obtener_todos_los_pokemon(
+    tipo: Annotated[str | None, Query(min_length=1)] = None,
+    habilidad: Annotated[str | None, Query(min_length=1)] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 5,
+    offset: Annotated[int, Query(ge=0)] = 0,
+):
+    pokedex_local = cargar_pokedex()
+    tipo_normalizado = tipo.strip().casefold() if tipo else None
+    habilidad_normalizada = habilidad.strip().casefold() if habilidad else None
+
+    resultados = {
+        pokemon_id: pokemon
+        for pokemon_id, pokemon in pokedex_local.items()
+        if (
+            tipo_normalizado is None
+            or tipo_normalizado in (valor.casefold() for valor in pokemon["tipo"])
+        )
+        and (
+            habilidad_normalizada is None
+            or habilidad_normalizada == pokemon["habilidad"].casefold()
+        )
+    }
+
+    if not resultados:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No se encontraron Pokémon con los filtros solicitados.",
+        )
+
+    coincidencias = list(resultados.items())
+    resultados_paginados = dict(coincidencias[offset : offset + limit])
+    sincronizar_memoria(pokedex_local)
+
+    return {
+        "total_coincidencias": len(resultados),
+        "limite": limit,
+        "desplazamiento": offset,
+        "resultados": resultados_paginados,
     }
 
 
@@ -89,10 +217,11 @@ def obtener_catalogo_pokemons(page: int = 1, size: int = 3):
             detail="Los valores de pagina o tamaño deben ser mayores a cero.",
         )
 
+    pokedex_local = cargar_pokedex()
     indice_inicial = (page - 1) * size
     indice_final = indice_inicial + size
-    pokedex_en_lista = list(pokedex.items())
-    resultado_paginado = dict(pokedex_en_lista[indice_inicial:indice_final])
+    resultado_paginado = dict(list(pokedex_local.items())[indice_inicial:indice_final])
+    sincronizar_memoria(pokedex_local)
 
     return {
         "pagina_actual": page,
@@ -103,150 +232,166 @@ def obtener_catalogo_pokemons(page: int = 1, size: int = 3):
 
 @app.get("/pokemons/{pokemon_id}")
 def obtener_por_id(pokemon_id: int):
-    if pokemon_id not in pokedex:
+    pokedex_local = cargar_pokedex()
+
+    if pokemon_id not in pokedex_local:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"El Pokémon con el ID #{pokemon_id} no existe en la región.",
         )
-    return pokedex[pokemon_id]
+
+    sincronizar_memoria(pokedex_local)
+    return pokedex_local[pokemon_id]
 
 
-@app.get("/pokemons")
-def obtener_todos_los_pokemon(
-    tipo: Annotated[str | None, Query(min_length=1)] = None,
-    habilidad: Annotated[str | None, Query(min_length=1)] = None,
-    limit: Annotated[int, Query(ge=1, le=100)] = 5,
-    offset: Annotated[int, Query(ge=0)] = 0,
+@app.post("/pokemons")
+def registrar_pokemon(
+    nuevo_pokemon: PokemonConId,
+    x_api_key: Annotated[str | None, Header()] = None,
 ):
-    """Filtra la Pokédex y después pagina las coincidencias."""
-    tipo_normalizado = tipo.strip().casefold() if tipo else None
-    habilidad_normalizada = habilidad.strip().casefold() if habilidad else None
+    validar_api_key(x_api_key)
+    pokedex_local = cargar_pokedex()
+    pokemon_id = nuevo_pokemon.id
 
-    if tipo_normalizado and not any(
-        tipo_normalizado in (tipo_pokemon.casefold() for tipo_pokemon in pokemon["tipo"])
-        for pokemon in pokedex.values()
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No existe ningún Pokémon de tipo '{tipo}' en la Pokédex.",
-        )
-
-    if habilidad_normalizada and not any(
-        habilidad_normalizada == pokemon["habilidad"].casefold()
-        for pokemon in pokedex.values()
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No existe ningún Pokémon con la habilidad '{habilidad}' en la Pokédex.",
-        )
-
-    resultados = {
-        pokemon_id: pokemon
-        for pokemon_id, pokemon in pokedex.items()
-        if (
-            tipo_normalizado is None
-            or tipo_normalizado
-            in (tipo_pokemon.casefold() for tipo_pokemon in pokemon["tipo"])
-        )
-        and (
-            habilidad_normalizada is None
-            or habilidad_normalizada == pokemon["habilidad"].casefold()
-        )
-    }
-
-    if not resultados:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=(
-                "No se encontraron Pokémon con la combinación de filtros "
-                f"tipo='{tipo}' y habilidad='{habilidad}'."
-            ),
-        )
-
-    coincidencias = list(resultados.items())
-    resultados_paginados = dict(coincidencias[offset : offset + limit])
-
-    return {
-        "total_coincidencias": len(resultados),
-        "limite": limit,
-        "desplazamiento": offset,
-        "resultados": resultados_paginados,
-    }
-
-
-@app.post("/pokemon/{pokemon_id}")
-def registrar_nuevo_pokemon(pokemon_id: int, nuevo_pokemon: Pokemon):
-    if pokemon_id in pokedex:
+    if pokemon_id in pokedex_local:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
                 f"Ya existe un Pokémon con el ID #{pokemon_id}. "
-                f"Se trata de {pokedex[pokemon_id]['nombre']}."
+                f"Se trata de {pokedex_local[pokemon_id]['nombre']}."
             ),
         )
-    pokedex[pokemon_id] = nuevo_pokemon.model_dump()
+
+    pokedex_local[pokemon_id] = nuevo_pokemon.model_dump(exclude={"id"})
+    guardar_pokedex(pokedex_local)
+    sincronizar_memoria(pokedex_local)
+
     return {
         "mensaje": (
             f"¡Ya está! Nuevo Pokémon registrado con el ID #{pokemon_id} "
-            f"y el nombre {pokedex[pokemon_id]['nombre']}."
+            f"y el nombre {pokedex_local[pokemon_id]['nombre']}."
         ),
-        "datos": pokedex[pokemon_id],
+        "datos": pokedex_local[pokemon_id],
     }
 
 
 @app.put("/pokemons/{pokemon_id}")
 def actualizar_pokemon_completo(pokemon_id: int, pokemon_actualizado: Pokemon):
-    if pokemon_id not in pokedex:
+    pokedex_local = cargar_pokedex()
+
+    if pokemon_id not in pokedex_local:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No existe el Pokémon #{pokemon_id} que se quiere actualizar en la Pokédex.",
+            detail=f"No existe el Pokémon #{pokemon_id} que se quiere actualizar.",
         )
-    pokedex[pokemon_id] = pokemon_actualizado.model_dump()
+
+    pokedex_local[pokemon_id] = pokemon_actualizado.model_dump()
+    guardar_pokedex(pokedex_local)
+    sincronizar_memoria(pokedex_local)
 
     return {
         "mensaje": "Reemplazo completado con éxito.",
-        "datos": pokedex[pokemon_id],
+        "datos": pokedex_local[pokemon_id],
     }
 
 
 @app.patch("/pokemons/{pokemon_id}")
 def actualizar_pokemon_parcial(pokemon_id: int, pokemon_actualizado: PokemonParcial):
-    if pokemon_id not in pokedex:
+    pokedex_local = cargar_pokedex()
+
+    if pokemon_id not in pokedex_local:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No existe el Pokémon #{pokemon_id} que se quiere actualizar en la Pokédex.",
+            detail=f"No existe el Pokémon #{pokemon_id} que se quiere actualizar.",
         )
 
     datos_a_actualizar = pokemon_actualizado.model_dump(
         exclude_unset=True,
         exclude_none=True,
     )
-    for llave, valor in datos_a_actualizar.items():
-        pokedex[pokemon_id][llave] = valor
+    pokedex_local[pokemon_id].update(datos_a_actualizar)
+    guardar_pokedex(pokedex_local)
+    sincronizar_memoria(pokedex_local)
 
     return {
         "mensaje": "Actualización parcial exitosa.",
-        "datos": pokedex[pokemon_id],
+        "datos": pokedex_local[pokemon_id],
     }
 
 
 @app.delete("/pokemons/{pokemon_id}")
-def liberar_pokemon(pokemon_id: int):
-    if pokemon_id not in pokedex:
+def eliminar_pokemon(
+    pokemon_id: int,
+    x_api_key: Annotated[str | None, Header()] = None,
+):
+    validar_api_key(x_api_key)
+    pokedex_local = cargar_pokedex()
+
+    if pokemon_id not in pokedex_local:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No existe el Pokémon #{pokemon_id} que se quiere borrar en la Pokédex.",
+            detail=f"No existe el Pokémon #{pokemon_id} que se quiere borrar.",
         )
 
-    if pokemon_id in pokemon_iniciales:
+    if pokemon_id in POKEMON_INICIALES:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permiso para eliminar un Pokémon inicial.",
         )
 
-    pokemon_liberado = pokedex.pop(pokemon_id)
-    nombre = pokemon_liberado["nombre"]
+    pokemon_eliminado = pokedex_local.pop(pokemon_id)
+    guardar_pokedex(pokedex_local)
+    sincronizar_memoria(pokedex_local)
 
     return {
-        "mensaje": f"¡Adiós, {nombre}! Pokémon liberado exitosamente."
+        "mensaje": f"¡Adiós, {pokemon_eliminado['nombre']}! Pokémon eliminado exitosamente."
+    }
+
+
+@app.get("/investigar/{nombre}", response_model=Pokemon)
+def investigar_pokemon_externo(nombre: str):
+    url_externa = f"https://pokeapi.co/api/v2/pokemon/{nombre.lower()}"
+    solicitud = urllib.request.Request(
+        url_externa,
+        headers={"User-Agent": "PokemonClassAPI/1.0"},
+    )
+
+    try:
+        with urllib.request.urlopen(solicitud, timeout=10) as respuesta:
+            datos = json.load(respuesta)
+    except urllib.error.HTTPError as error:
+        if error.code == status.HTTP_404_NOT_FOUND:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No hay información de {nombre.capitalize()} en la PokéAPI.",
+            ) from error
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="La PokéAPI no respondió correctamente.",
+        ) from error
+    except urllib.error.URLError as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="No se pudo conectar con la PokéAPI.",
+        ) from error
+
+    estadisticas = {
+        estadistica["stat"]["name"]: estadistica["base_stat"]
+        for estadistica in datos["stats"]
+    }
+
+    return {
+        "nombre": datos["name"].capitalize(),
+        "tipo": [
+            tipo_pokemon["type"]["name"].capitalize()
+            for tipo_pokemon in datos["types"]
+        ],
+        "nivel": 1,
+        "habilidad": datos["abilities"][0]["ability"]["name"].capitalize(),
+        "movimientos": [
+            movimiento["move"]["name"]
+            for movimiento in datos["moves"][:4]
+        ],
+        "ataque": estadisticas["attack"],
+        "defensa": estadisticas["defense"],
     }
