@@ -183,6 +183,7 @@ Petición:
 ```http
 POST /pokemon/25
 Content-Type: application/json
+x-api-key: Mexico gana el mundial.
 ```
 
 ```json
@@ -199,4 +200,5 @@ Content-Type: application/json
 
 ## Nota
 
-Los datos se almacenan temporalmente en memoria. Al reiniciar el servidor, la Pokédex vuelve a su estado inicial.
+Los datos se cargan desde `pokedex.json` si existe. Cuando se registra, actualiza
+o elimina un Pokémon, la Pokédex se guarda de nuevo en ese archivo.
