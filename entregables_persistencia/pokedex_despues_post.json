@@ -1,0 +1,160 @@
+{
+    "1": {
+        "nombre": "Bulbasaur",
+        "tipo": [
+            "Planta",
+            "Veneno"
+        ],
+        "nivel": 5,
+        "habilidad": "Piel verde",
+        "movimientos": [
+            "Placaje",
+            "Gruñido",
+            "Arañazo",
+            "Látigo"
+        ],
+        "ataque": 10,
+        "defensa": 5
+    },
+    "3": {
+        "nombre": "Venusaur",
+        "tipo": [
+            "Planta",
+            "Veneno"
+        ],
+        "nivel": 32,
+        "habilidad": "Piel verde",
+        "movimientos": [
+            "Placaje",
+            "Gruñido",
+            "Arañazo",
+            "Látigo"
+        ],
+        "ataque": 10,
+        "defensa": 5
+    },
+    "4": {
+        "nombre": "Charmander",
+        "tipo": [
+            "Fuego"
+        ],
+        "nivel": 5,
+        "habilidad": "Piel roja",
+        "movimientos": [
+            "Placaje",
+            "Gruñido",
+            "Arañazo",
+            "Látigo"
+        ],
+        "ataque": 10,
+        "defensa": 5
+    },
+    "5": {
+        "nombre": "Charmeleon",
+        "tipo": [
+            "Fuego"
+        ],
+        "nivel": 16,
+        "habilidad": "Piel roja",
+        "movimientos": [
+            "Placaje",
+            "Gruñido",
+            "Arañazo",
+            "Látigo"
+        ],
+        "ataque": 10,
+        "defensa": 5
+    },
+    "6": {
+        "nombre": "Charizard",
+        "tipo": [
+            "Fuego",
+            "Volador"
+        ],
+        "nivel": 32,
+        "habilidad": "Piel roja",
+        "movimientos": [
+            "Placaje",
+            "Gruñido",
+            "Arañazo",
+            "Látigo"
+        ],
+        "ataque": 10,
+        "defensa": 5
+    },
+    "7": {
+        "nombre": "Squirtle",
+        "tipo": [
+            "Agua"
+        ],
+        "nivel": 5,
+        "habilidad": "Piel azul",
+        "movimientos": [
+            "Placaje",
+            "Gruñido",
+            "Arañazo",
+            "Látigo"
+        ],
+        "ataque": 10,
+        "defensa": 5
+    },
+    "8": {
+        "nombre": "Wartortle",
+        "tipo": [
+            "Agua"
+        ],
+        "nivel": 5,
+        "habilidad": "Piel azul",
+        "movimientos": [
+            "Placaje",
+            "Gruñido",
+            "Arañazo",
+            "Látigo"
+        ],
+        "ataque": 10,
+        "defensa": 5
+    },
+    "9": {
+        "nombre": "Blastoise",
+        "tipo": [
+            "Agua"
+        ],
+        "nivel": 5,
+        "habilidad": "Piel azul",
+        "movimientos": [
+            "Placaje",
+            "Gruñido",
+            "Arañazo",
+            "Látigo"
+        ],
+        "ataque": 10,
+        "defensa": 5
+    },
+    "0": {
+        "nombre": "string",
+        "tipo": [
+            "string"
+        ],
+        "nivel": 0,
+        "habilidad": "string",
+        "movimientos": [
+            "string"
+        ],
+        "ataque": 0,
+        "defensa": 0
+    },
+    "151": {
+        "nombre": "Mew",
+        "tipo": [
+            "Psíquico"
+        ],
+        "nivel": 70,
+        "habilidad": "Sincronía",
+        "movimientos": [
+            "Psíquico",
+            "Transformación"
+        ],
+        "ataque": 100,
+        "defensa": 100
+    }
+}

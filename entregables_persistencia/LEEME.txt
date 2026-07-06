@@ -1,0 +1,15 @@
+Entregables actualizados despues de reestructurar todo el codigo en main.py
+
+Capturas principales:
+- 01_codigo_persistencia.png
+- 02_codigo_post_pokemons.png
+- 03_codigo_patch.png
+- 04_codigo_delete.png
+- 05_demo_post_json.png
+- 06_demo_delete_json.png
+- 07_verificacion_manual.png
+
+Evidencia adicional:
+- evidencia_demo.json
+- pokedex_despues_post.json
+- pokedex_despues_delete.json

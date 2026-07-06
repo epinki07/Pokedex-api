@@ -1,0 +1,27 @@
+{
+    "post": "POST /pokemons",
+    "post_respuesta": {
+        "mensaje": "¡Ya está! Nuevo Pokémon registrado con el ID #151 y el nombre Mew.",
+        "datos": {
+            "nombre": "Mew",
+            "tipo": [
+                "Psíquico"
+            ],
+            "nivel": 70,
+            "habilidad": "Sincronía",
+            "movimientos": [
+                "Psíquico",
+                "Transformación"
+            ],
+            "ataque": 100,
+            "defensa": 100
+        }
+    },
+    "id_existe_despues_post": true,
+    "delete": "DELETE /pokemons/151",
+    "delete_respuesta": {
+        "mensaje": "¡Adiós, Mew! Pokémon eliminado exitosamente."
+    },
+    "id_existe_despues_delete": false,
+    "archivo_db": "/Users/diegoramirezmagana/Downloads/Pokemon/pokedex.json"
+}
